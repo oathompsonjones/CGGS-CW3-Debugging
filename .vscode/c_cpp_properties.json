@@ -6,7 +6,10 @@
                 "${default}",
                 "${workspaceFolder}/external/eigen",
                 "${workspaceFolder}/external/polyscope",
-                "${workspaceFolder}/code/include"
+                "${workspaceFolder}/code/include",
+                "${workspaceFolder}/external/polyscope/include",
+                "${workspaceFolder}/external/polyscope/deps/glm",
+                "${workspaceFolder}/external/polyscope/deps/imgui/imgui"
             ],
             "defines": [],
             "macFrameworkPath": [
