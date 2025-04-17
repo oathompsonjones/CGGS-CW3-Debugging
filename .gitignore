@@ -32,3 +32,5 @@
 *.app
 
 code/build
+report/build/*
+!report/build/main.pdf

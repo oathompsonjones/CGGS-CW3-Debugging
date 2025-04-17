@@ -1,0 +1,127 @@
+% Define the type of document.
+\documentclass[12pt, a4paper]{article}
+
+% Set a more sensible document size.
+\usepackage[margin=0.75in]{geometry}
+
+% Set the language.
+\usepackage[british]{babel}
+    \usepackage{csquotes}
+
+% Prevent words from being split accross lines.
+\tolerance=1\emergencystretch=\maxdimen\hyphenpenalty=10000\hbadness=10000
+
+% Allows images to be included.
+\usepackage{graphicx}
+    \graphicspath{ {./images/} }
+
+% Allow disabling of floating objects.
+\usepackage{float}
+
+% Allow the use of listings.
+\usepackage[T1]{fontenc}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{listings}
+    \lstset{
+        language=C++,
+        basicstyle=\ttfamily,
+        keywordstyle=[1]\color{Dandelion},
+        keywordstyle=[2]\color{Cyan},
+        keywordstyle=[3]\color{TealBlue},
+        commentstyle=\color{Gray},
+        numbers=left,
+        numberstyle=\ttfamily,
+        stepnumber=1,
+        numbersep=5pt,
+        tabsize=4,
+        breaklines=true,
+        captionpos=b,
+        frame=single,
+        escapechar=`,
+        morekeywords=[1]{Eigen,JacobiSVD,MatrixXd,Matrix3d,Vector3d,Array3d,RowVector3d},
+        morekeywords=[2]{transpose,row,singularValues,matrixU,matrixV,determinant,Identity,minCoeff,array,newSigma},
+        morekeywords=[3]{ComputeFullU,ComputeFullV,ComputeThinU,ComputeThinV},
+    }
+
+% Create some shortcut commands:
+\newcommand{\removed}[1]{\colorbox{pink}{\vphantom{A}#1}}
+\newcommand{\added}[1]{\colorbox{lime}{\vphantom{A}#1}}
+\newcommand{\swapped}[2]{\removed{#1}\added{#2}}
+\newcommand{\inline}[1]{\fbox{\texttt{#1}}}
+
+% Sets the title.
+\title{Computer Graphics: Geometry and Simulation\\Coursework 3: Debugging Geometry and Simulation}
+\author{Oliver Jones (s2153980)}
+\date{}
+
+% Begin the document.
+\begin{document}
+\maketitle
+
+\section*{Introduction}
+    Throughout this report are a series of code snippets, highlighting the changes
+        made to the original code to fix the bugs.
+    The \removed{pink} sections have been removed from the original code, while the
+        \added{green} sections have been added.
+
+\section{As-Rigid-as-Possible Deformation}
+    \subsection{}
+        \begin{lstlisting}[caption={The \inline{0} and \inline{1} have been swapped.}, label={lst:a1}]
+g.row(j) = (origV.row(E(j, `\swapped{0}{1}`)) - origV.row(E(j, `\swapped{1}{0}`))) * REdge;
+                \end{lstlisting}
+
+    \subsection{}
+        \begin{lstlisting}[caption={The \inline{* W } was missing.}, label={lst:b1}]
+MatrixXd rhs = d0I.transpose() `\added{* W }` * (g - d0B * constPositions);
+          \end{lstlisting}
+
+    \subsection{}
+        \begin{lstlisting}[caption={Lines 3 and 5 have been removed. The \inline{for} loop is now closed 
+            on line 6 instead of 22. Lines 7 to 21 are no longer indented.}, label={lst:c1}]
+for (int k = 0; k < oneRings[j].size(); k++) {
+    P.row(k) = origV.row(oneRings[j][k]) - origV.row(j);
+    `\removed{P.row(k) = origV.row(oneRings[j][k]) - origV.row(j);}`
+    Q.row(k) = currV.row(oneRings[j][k]) - currV.row(j);
+    `\removed{Q.row(k) = currV.row(oneRings[j][k]) - currV.row(j);}`
+`\added{\}}`
+`\removed{\space\space\space\space}`S = Q.transpose() * P;
+`\removed{\space\space\space\space}`Eigen::JacobiSVD<Eigen::Matrix3d> svd(S, Eigen::ComputeFullU | Eigen::ComputeFullV);
+`\removed{\space\space\space\space}`Eigen::Matrix3d U = svd.matrixU();
+`\removed{\space\space\space\space}`Eigen::Vector3d Sigma = svd.singularValues();
+`\removed{\space\space\space\space}`Eigen::Matrix3d Vt = svd.matrixV().transpose();
+`\removed{\space\space\space\space}`Matrix3d currR = U * Vt;
+`\removed{\space\space\space\space}`if (currR.determinant() < 0.0) {
+`\removed{\space\space\space\space}`    // check where the smallest singular values falls
+`\removed{\space\space\space\space}`    int minValue, minIndex;
+`\removed{\space\space\space\space}`    minValue = Sigma.minCoeff(&minIndex);
+`\removed{\space\space\space\space}`    Matrix3d newSigma = Matrix3d::Identity();
+`\removed{\space\space\space\space}`    newSigma(minIndex, minIndex) = -1;
+`\removed{\space\space\space\space}`    currR = U * newSigma * Vt;
+`\removed{\space\space\space\space}`}
+`\removed{\space\space\space\space}`R[j] = currR;
+`\removed{\}}`
+            \end{lstlisting}
+
+\section{Multi-body Rigid Simulation}
+    \subsection{}
+        Pairwise gravity was reversed.
+        Two possible fixes:
+        \begin{lstlisting}[caption={The \inline{+} and \inline{-} have been swapped.}, label={lst:d1}]
+forces.row(i).array() = forces.row(i) `\swapped{-}{+}` forceDirection * gravityConstant / sqrDistance;
+forces.row(j).array() = forces.row(j) `\swapped{+}{-}` forceDirection * gravityConstant / sqrDistance;
+\end{lstlisting}
+        \begin{lstlisting}[caption={The \inline{i} and \inline{j} have been swapped.}, label={lst:e1}]
+RowVector3d forceDirection = spherePoses.row(`\swapped{j}{i}`) - spherePoses.row(`\swapped{i}{j}`);
+\end{lstlisting}
+
+    \subsection{}
+        \begin{lstlisting}[caption={The \inline{2} has been replaced with \inline{4}.}, label={lst:f1}]
+if (sqrDistance < `\swapped{2}{4}` * sqrRadius) {
+\end{lstlisting}
+
+    \subsection{}
+        \begin{lstlisting}[caption={The \inline{>} has been swapped with \inline{<}.}, label={lst:g1}]
+if (sphereVelocities(i, 1) `\swapped{>}{<}` 0.0)
+\end{lstlisting}
+
+\end{document}
