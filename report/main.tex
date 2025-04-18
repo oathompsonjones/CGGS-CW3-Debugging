@@ -78,14 +78,15 @@ MatrixXd rhs = d0I.transpose() `\added{* W }` * (g - d0B * constPositions);
 
     \subsection{}
         \begin{lstlisting}[caption={Lines 3 and 5 have been removed. The \inline{for} loop is now closed 
-            on line 6 instead of 22. Lines 7 to 21 are no longer indented.}, label={lst:c1}]
+            on line 6 instead of 22. \inline{P} and \inline{Q} on line 7 have been wapped. Lines 7 to 21
+            are no longer indented.}, label={lst:c1}]
 for (int k = 0; k < oneRings[j].size(); k++) {
     P.row(k) = origV.row(oneRings[j][k]) - origV.row(j);
 `\removed{\tab{}P.row(k) = origV.row(oneRings[j][k]) - origV.row(j);}`
     Q.row(k) = currV.row(oneRings[j][k]) - currV.row(j);
 `\removed{\tab{}Q.row(k) = currV.row(oneRings[j][k]) - currV.row(j);}`
 `\added{\}}`
-`\removed{\tab}`S = Q.transpose() * P;
+`\removed{\tab}`S = `\swapped{Q}{P}`.transpose() * `\swapped{P}{Q}`;
 `\removed{\tab}`Eigen::JacobiSVD<Eigen::Matrix3d> svd(S, Eigen::ComputeFullU | Eigen::ComputeFullV);
 `\removed{\tab}`Eigen::Matrix3d U = svd.matrixU();
 `\removed{\tab}`Eigen::Vector3d Sigma = svd.singularValues();
@@ -117,7 +118,7 @@ RowVector3d forceDirection = spherePoses.row(`\swapped{j}{i}`) - spherePoses.row
 
     \subsection{}
         \begin{lstlisting}[caption={The \inline{2} has been replaced with \inline{4}.}, label={lst:f1}]
-if (sqrDistance < `\swapped{2}{4}` * sqrRadius) {
+if (sqrDistance < `\swapped{2}{4}` * sqrRadius)
 \end{lstlisting}
 
     \subsection{}

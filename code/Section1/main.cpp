@@ -68,8 +68,8 @@ MatrixXd ARAP_deformation(const MatrixXd& origV, const MatrixXi& E, const Sparse
                 Q.row(k) = currV.row(oneRings[j][k]) - currV.row(j);
                 // Q.row(k) = currV.row(oneRings[j][k]) - currV.row(j); // FIX: not needed
             }
-            // FIX: This was in the loop above
-            S = Q.transpose() * P;
+            // FIX START: This was in the loop above
+            S = P.transpose() * Q;  // FIX: P and Q were swapped
             Eigen::JacobiSVD<Eigen::Matrix3d> svd(S, Eigen::ComputeFullU | Eigen::ComputeFullV);
             Eigen::Matrix3d U = svd.matrixU();
             Eigen::Vector3d Sigma = svd.singularValues();
@@ -85,6 +85,7 @@ MatrixXd ARAP_deformation(const MatrixXd& origV, const MatrixXi& E, const Sparse
                 currR = U * newSigma * Vt;
             }
             R[j] = currR;
+            // FIX END
         }
     }
     return currV;
