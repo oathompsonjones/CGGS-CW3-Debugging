@@ -17,7 +17,7 @@ using namespace std;
 bool isAnimating = false;
 double timeStep = 0.02;
 int numSpheres = 100;
-double CRCoeff = 0.0;
+double CRCoeff = 0.5;
 double radius = 0.1;
 double gravityConstant = 0.1;
 MatrixXd spherePoses, sphereVelocities;
@@ -47,6 +47,7 @@ void callback_function() {
             double sqrDistance = forceDirection.squaredNorm();
             if (sqrDistance > 4.1 * sqrRadius) {  // Otherwise the objects are too close and it will overshoot (tunnelling)
                 forceDirection.normalize();
+                // FIX ALTERNATE: Swap the + and - signs
                 forces.row(i).array() = forces.row(i) - forceDirection * gravityConstant / sqrDistance;
                 forces.row(j).array() = forces.row(j) + forceDirection * gravityConstant / sqrDistance;
             }
